@@ -1,0 +1,895 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>消防人員常年訓練體能測驗得分換算器</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+        /* Custom styled scrollbars */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen pb-12">
+
+    <!-- Header Section -->
+    <header class="bg-gradient-to-r from-red-600 to-amber-600 text-white shadow-lg">
+        <div class="max-w-6xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <div class="p-3 bg-white/10 rounded-xl backdrop-blur-md">
+                        <i class="fa-solid to-fire-flame-curved fa-fire-flame-curved text-3xl text-amber-300"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-2xl sm:text-3xl font-bold tracking-tight">消防人員常年訓練體能測驗換算器</h1>
+                        <p class="text-xs sm:text-sm text-red-100 mt-1">體能測驗各項目成績即時試算與得分統計系統</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <button onclick="openSettingsModal()" class="px-3 py-2 bg-white/20 hover:bg-white/30 text-white rounded-xl text-xs sm:text-sm font-semibold transition backdrop-blur-md flex items-center shadow-sm">
+                        <i class="fa-solid fa-sliders mr-1.5"></i> 評分標準設定
+                    </button>
+                    <div class="hidden sm:block text-right">
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-white/20 text-white">
+                            <i class="fa-regular fa-clock mr-1.5"></i> 即時自動計算
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
+        
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            
+            <!-- Input Form Section (8 Cols) -->
+            <div class="lg:col-span-7 space-y-6">
+                
+                <!-- Basic Info Card -->
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-5 sm:p-6 transition-all hover:shadow-md">
+                    <h2 class="text-lg font-bold text-slate-900 flex items-center mb-4">
+                        <i class="fa-solid fa-user-gear text-red-500 mr-2"></i> 基本資料設定
+                    </h2>
+                    
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <!-- Gender Selection -->
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-2">性別</label>
+                            <div class="grid grid-cols-2 gap-3">
+                                <label id="gender-male-label" class="flex items-center justify-center p-3 border-2 border-red-500 bg-red-50/50 rounded-xl cursor-pointer transition-all">
+                                    <input type="radio" name="gender" value="male" checked class="sr-only" onchange="handleBasicInfoChange()">
+                                    <i class="fa-solid fa-mars text-blue-600 mr-2 text-lg"></i>
+                                    <span class="font-medium text-slate-800">男性</span>
+                                </label>
+                                <label id="gender-female-label" class="flex items-center justify-center p-3 border-2 border-slate-200 bg-white rounded-xl cursor-pointer transition-all hover:border-slate-300">
+                                    <input type="radio" name="gender" value="female" class="sr-only" onchange="handleBasicInfoChange()">
+                                    <i class="fa-solid fa-venus text-pink-500 mr-2 text-lg"></i>
+                                    <span class="font-medium text-slate-800">女性</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Age Input -->
+                        <div>
+                            <label for="age-input" class="block text-sm font-semibold text-slate-700 mb-2">
+                                年齡 <span class="text-xs font-normal text-slate-500" id="age-hint">(對應男性分組)</span>
+                            </label>
+                            <div class="relative">
+                                <input type="number" id="age-input" min="18" max="70" value="25" 
+                                    class="w-full pl-4 pr-12 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 focus:bg-white text-slate-900 font-semibold transition"
+                                    oninput="calculateScores()">
+                                <span class="absolute right-4 top-2.5 text-slate-400 font-medium text-sm">歲</span>
+                            </div>
+                            <!-- Age Standard Badge -->
+                            <div class="mt-2 text-xs text-slate-600 font-medium flex items-center" id="age-group-badge">
+                                適用標準：<span class="text-red-600 font-bold ml-1" id="current-standard-name">男性 20-29 歲</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Test Items Input Form Card -->
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-5 sm:p-6">
+                    <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
+                        <h2 class="text-lg font-bold text-slate-900 flex items-center">
+                            <i class="fa-solid fa-list-check text-red-500 mr-2"></i> 測驗成績輸入
+                        </h2>
+                        <button onclick="clearAllInputs()" class="text-xs font-medium text-slate-500 hover:text-red-600 transition flex items-center">
+                            <i class="fa-solid fa-rotate-right mr-1"></i> 清空資料
+                        </button>
+                    </div>
+
+                    <div class="space-y-4">
+                        
+                        <!-- 1. 立定跳遠 -->
+                        <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200/60 transition focus-within:ring-2 focus-within:ring-red-500/20 focus-within:border-red-400">
+                            <div class="flex justify-between items-center mb-1.5">
+                                <label for="standing-jump" class="text-sm font-bold text-slate-700 flex items-center">
+                                    <span class="w-2 h-2 rounded-full bg-red-500 mr-2"></span>立定跳遠
+                                </label>
+                                <span id="score-jump" class="text-xs font-bold px-2 py-0.5 rounded-full bg-slate-200 text-slate-700">0 分</span>
+                            </div>
+                            <div class="relative">
+                                <input type="number" id="standing-jump" placeholder="請輸入公分" step="1"
+                                    class="w-full pl-3 pr-12 py-2 bg-white border border-slate-300 rounded-lg focus:outline-none text-slate-800 text-sm font-semibold"
+                                    oninput="calculateScores()">
+                                <span class="absolute right-3 top-2 text-slate-400 text-xs font-medium">cm</span>
+                            </div>
+                        </div>
+
+                        <!-- 2. 後拋擲遠 -->
+                        <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200/60 transition focus-within:ring-2 focus-within:ring-red-500/20 focus-within:border-red-400">
+                            <div class="flex justify-between items-center mb-1.5">
+                                <label for="back-throw" class="text-sm font-bold text-slate-700 flex items-center">
+                                    <span class="w-2 h-2 rounded-full bg-red-500 mr-2"></span>後拋擲遠
+                                </label>
+                                <span id="score-throw" class="text-xs font-bold px-2 py-0.5 rounded-full bg-slate-200 text-slate-700">0 分</span>
+                            </div>
+                            <div class="relative">
+                                <input type="number" id="back-throw" placeholder="請輸入公尺" step="0.1"
+                                    class="w-full pl-3 pr-12 py-2 bg-white border border-slate-300 rounded-lg focus:outline-none text-slate-800 text-sm font-semibold"
+                                    oninput="calculateScores()">
+                                <span class="absolute right-3 top-2 text-slate-400 text-xs font-medium">m</span>
+                            </div>
+                        </div>
+
+                        <!-- 3. 6公尺30秒折返跑 -->
+                        <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200/60 transition focus-within:ring-2 focus-within:ring-red-500/20 focus-within:border-red-400">
+                            <div class="flex justify-between items-center mb-1.5">
+                                <label for="shuttle-run" class="text-sm font-bold text-slate-700 flex items-center">
+                                    <span class="w-2 h-2 rounded-full bg-red-500 mr-2"></span>6公尺30秒折返跑
+                                </label>
+                                <span id="score-shuttle" class="text-xs font-bold px-2 py-0.5 rounded-full bg-slate-200 text-slate-700">0 分</span>
+                            </div>
+                            <div class="relative">
+                                <input type="number" id="shuttle-run" placeholder="請輸入完成趟數" step="1"
+                                    class="w-full pl-3 pr-12 py-2 bg-white border border-slate-300 rounded-lg focus:outline-none text-slate-800 text-sm font-semibold"
+                                    oninput="calculateScores()">
+                                <span class="absolute right-3 top-2 text-slate-400 text-xs font-medium">趟</span>
+                            </div>
+                        </div>
+
+                        <!-- 4. 菱形槓硬舉 -->
+                        <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200/60 transition focus-within:ring-2 focus-within:ring-red-500/20 focus-within:border-red-400">
+                            <div class="flex justify-between items-center mb-1.5">
+                                <label for="trapbar-deadlift" class="text-sm font-bold text-slate-700 flex items-center">
+                                    <span class="w-2 h-2 rounded-full bg-red-500 mr-2"></span>菱形槓硬舉
+                                </label>
+                                <span id="score-deadlift" class="text-xs font-bold px-2 py-0.5 rounded-full bg-slate-200 text-slate-700">0 分</span>
+                            </div>
+                            <div class="relative">
+                                <input type="number" id="trapbar-deadlift" placeholder="請輸入公斤" step="1"
+                                    class="w-full pl-3 pr-12 py-2 bg-white border border-slate-300 rounded-lg focus:outline-none text-slate-800 text-sm font-semibold"
+                                    oninput="calculateScores()">
+                                <span class="absolute right-3 top-2 text-slate-400 text-xs font-medium">kg</span>
+                            </div>
+                        </div>
+
+                        <!-- 5. 懸吊屈臂 / 屈臂懸垂 (根據性別動態切換顯示) -->
+                        <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200/60 transition">
+                            <div class="flex justify-between items-center mb-1.5">
+                                <label class="text-sm font-bold text-slate-700 flex items-center">
+                                    <span class="w-2 h-2 rounded-full bg-red-500 mr-2"></span>
+                                    <span id="flexed-arm-title">懸吊屈臂</span>
+                                </label>
+                                <span id="score-arm" class="text-xs font-bold px-2 py-0.5 rounded-full bg-slate-200 text-slate-700">0 分</span>
+                            </div>
+
+                            <!-- 男性模式：單一次數輸入 -->
+                            <div id="male-arm-container" class="relative">
+                                <input type="number" id="pull-ups-male" placeholder="請輸入完成次數" step="1"
+                                    class="w-full pl-3 pr-12 py-2 bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-400 text-slate-800 text-sm font-semibold"
+                                    oninput="calculateScores()">
+                                <span class="absolute right-3 top-2 text-slate-400 text-xs font-medium">次</span>
+                            </div>
+
+                            <!-- 女性模式：兩個獨立輸入欄位 (次數 & 秒數) -->
+                            <div id="female-arm-container" class="hidden grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <div>
+                                    <label for="pull-ups-female-count" class="block text-xs font-medium text-slate-600 mb-1">懸吊屈臂 (次數)</label>
+                                    <div class="relative">
+                                        <input type="number" id="pull-ups-female-count" placeholder="0" step="1"
+                                            class="w-full pl-3 pr-12 py-2 bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-400 text-slate-800 text-sm font-semibold"
+                                            oninput="calculateScores()">
+                                        <span class="absolute right-3 top-2 text-slate-400 text-xs font-medium">次</span>
+                                    </div>
+                                    <p class="text-[11px] text-slate-400 mt-1">基準：1~6次 (可獲 9~15分)</p>
+                                </div>
+                                <div>
+                                    <label for="pull-ups-female-time" class="block text-xs font-medium text-slate-600 mb-1">屈臂懸垂 (秒數)</label>
+                                    <div class="relative">
+                                        <input type="number" id="pull-ups-female-time" placeholder="0" step="1"
+                                            class="w-full pl-3 pr-12 py-2 bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-400 text-slate-800 text-sm font-semibold"
+                                            oninput="calculateScores()">
+                                        <span class="absolute right-3 top-2 text-slate-400 text-xs font-medium">秒</span>
+                                    </div>
+                                    <p class="text-[11px] text-slate-400 mt-1">基準：20~35秒 (可獲 1~8分)</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 6. 負重行走 -->
+                        <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200/60 transition focus-within:ring-2 focus-within:ring-red-500/20 focus-within:border-red-400">
+                            <div class="flex justify-between items-center mb-1.5">
+                                <label for="farmer-walk" class="text-sm font-bold text-slate-700 flex items-center">
+                                    <span class="w-2 h-2 rounded-full bg-red-500 mr-2"></span>負重行走
+                                </label>
+                                <span id="score-walk" class="text-xs font-bold px-2 py-0.5 rounded-full bg-slate-200 text-slate-700">0 分</span>
+                            </div>
+                            <div class="relative">
+                                <input type="number" id="farmer-walk" placeholder="請輸入負重公斤數" step="1"
+                                    class="w-full pl-3 pr-12 py-2 bg-white border border-slate-300 rounded-lg focus:outline-none text-slate-800 text-sm font-semibold"
+                                    oninput="calculateScores()">
+                                <span class="absolute right-3 top-2 text-slate-400 text-xs font-medium">kg</span>
+                            </div>
+                        </div>
+
+                        <!-- 7. 1500公尺跑走 -->
+                        <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200/60 transition focus-within:ring-2 focus-within:ring-red-500/20 focus-within:border-red-400">
+                            <div class="flex justify-between items-center mb-1.5">
+                                <label class="text-sm font-bold text-slate-700 flex items-center">
+                                    <span class="w-2 h-2 rounded-full bg-red-500 mr-2"></span>1500公尺跑走
+                                </label>
+                                <span id="score-run" class="text-xs font-bold px-2 py-0.5 rounded-full bg-slate-200 text-slate-700">0 分</span>
+                            </div>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div class="relative">
+                                    <input type="number" id="run-minutes" placeholder="分鐘" min="0" step="1"
+                                        class="w-full pl-3 pr-12 py-2 bg-white border border-slate-300 rounded-lg focus:outline-none text-slate-800 text-sm font-semibold"
+                                        oninput="calculateScores()">
+                                    <span class="absolute right-3 top-2 text-slate-400 text-xs font-medium">分</span>
+                                </div>
+                                <div class="relative">
+                                    <input type="number" id="run-seconds" placeholder="秒數" min="0" max="59" step="1"
+                                        class="w-full pl-3 pr-12 py-2 bg-white border border-slate-300 rounded-lg focus:outline-none text-slate-800 text-sm font-semibold"
+                                        oninput="calculateScores()">
+                                    <span class="absolute right-3 top-2 text-slate-400 text-xs font-medium">秒</span>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dashboard / Score Summary Section (5 Cols) -->
+            <div class="lg:col-span-5 space-y-6">
+                
+                <!-- Total Score Card (Sticky) -->
+                <div class="bg-white rounded-2xl shadow-lg border border-slate-200/80 p-6 sticky top-6">
+                    <div class="text-center pb-6 border-b border-slate-100">
+                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Score</span>
+                        <h3 class="text-slate-700 font-bold text-lg mt-1">測驗成績總分</h3>
+                        
+                        <div class="my-4 flex items-baseline justify-center">
+                            <span id="total-score" class="text-6xl font-black text-red-600 tracking-tight">0</span>
+                            <span class="text-slate-400 font-medium text-lg ml-2">/ 140 分</span>
+                        </div>
+
+                        <!-- Progress Bar -->
+                        <div class="w-full bg-slate-100 h-3 rounded-full overflow-hidden my-3">
+                            <div id="total-score-bar" class="bg-gradient-to-r from-red-500 to-amber-500 h-full w-0 transition-all duration-500 ease-out"></div>
+                        </div>
+                        
+                        <!-- Status Badge -->
+                        <div class="mt-3">
+                            <span id="evaluation-badge" class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-600">
+                                請輸入測驗數據
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Breakdown Table -->
+                    <div class="mt-6">
+                        <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">各項目得分明細</h4>
+                        <div class="space-y-2.5 text-sm">
+                            <div class="flex justify-between items-center py-1.5 border-b border-slate-100">
+                                <span class="text-slate-600 flex items-center">
+                                    <i class="fa-solid fa-ruler-horizontal w-5 text-slate-400 text-xs"></i> 立定跳遠
+                                </span>
+                                <span id="detail-jump" class="font-bold text-slate-800">0 分</span>
+                            </div>
+                            <div class="flex justify-between items-center py-1.5 border-b border-slate-100">
+                                <span class="text-slate-600 flex items-center">
+                                    <i class="fa-solid fa-hand-holding-drop w-5 text-slate-400 text-xs"></i> 後拋擲遠
+                                </span>
+                                <span id="detail-throw" class="font-bold text-slate-800">0 分</span>
+                            </div>
+                            <div class="flex justify-between items-center py-1.5 border-b border-slate-100">
+                                <span class="text-slate-600 flex items-center">
+                                    <i class="fa-solid fa-person-running w-5 text-slate-400 text-xs"></i> 折返跑
+                                </span>
+                                <span id="detail-shuttle" class="font-bold text-slate-800">0 分</span>
+                            </div>
+                            <div class="flex justify-between items-center py-1.5 border-b border-slate-100">
+                                <span class="text-slate-600 flex items-center">
+                                    <i class="fa-solid fa-dumbbell w-5 text-slate-400 text-xs"></i> 菱形槓硬舉
+                                </span>
+                                <span id="detail-deadlift" class="font-bold text-slate-800">0 分</span>
+                            </div>
+                            <div class="flex justify-between items-center py-1.5 border-b border-slate-100">
+                                <span class="text-slate-600 flex items-center">
+                                    <i class="fa-solid fa-child-reaching w-5 text-slate-400 text-xs"></i> 懸吊屈臂/懸垂
+                                </span>
+                                <span id="detail-arm" class="font-bold text-slate-800">0 分</span>
+                            </div>
+                            <div class="flex justify-between items-center py-1.5 border-b border-slate-100">
+                                <span class="text-slate-600 flex items-center">
+                                    <i class="fa-solid fa-weight-hanging w-5 text-slate-400 text-xs"></i> 負重行走
+                                </span>
+                                <span id="detail-walk" class="font-bold text-slate-800">0 分</span>
+                            </div>
+                            <div class="flex justify-between items-center py-1.5">
+                                <span class="text-slate-600 flex items-center">
+                                    <i class="fa-solid fa-stopwatch w-5 text-slate-400 text-xs"></i> 1500公尺跑走
+                                </span>
+                                <span id="detail-run" class="font-bold text-slate-800">0 分</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Notice / Description -->
+                    <div class="mt-6 p-4 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-xs leading-relaxed">
+                        <div class="font-bold mb-1 flex items-center">
+                            <i class="fa-solid fa-circle-info mr-1.5 text-amber-600"></i> 計算須知
+                        </div>
+                        <ul class="list-disc list-inside space-y-1 text-amber-700/90">
+                            <li>各項目單項最高得分為 20 分。</li>
+                            <li>女性懸吊屈臂(次數)與屈臂懸垂(秒數)會自動評估並採計較高得分之成績。</li>
+                            <li>跑走項目時間採「小於等於（≤）」標準，低於門檻者獲得相應分數。</li>
+                            <li>點擊右上角「評分標準設定」可自由微調各得分級距標準數值。</li>
+                        </ul>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4 sm:p-6">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-5xl max-h-[90vh] flex flex-col overflow-hidden border border-slate-200 animate-in fade-in zoom-in duration-200">
+            <!-- Modal Header -->
+            <div class="px-6 py-4 bg-slate-900 text-white flex justify-between items-center flex-shrink-0">
+                <div class="flex items-center space-x-2">
+                    <i class="fa-solid fa-sliders text-red-500 text-lg"></i>
+                    <h3 class="font-bold text-lg">體能測驗換算標準微調設定</h3>
+                </div>
+                <button onclick="closeSettingsModal()" class="text-slate-400 hover:text-white text-xl transition">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <!-- Category Filter Tabs -->
+            <div class="bg-slate-100 px-6 py-3 border-b border-slate-200 flex flex-wrap gap-2 flex-shrink-0">
+                <button onclick="switchSettingsTab('male_20_29')" id="tab-male_20_29" class="tab-btn active-tab px-3 py-1.5 text-xs font-bold rounded-lg transition bg-red-600 text-white shadow-sm">男性 20-29 歲</button>
+                <button onclick="switchSettingsTab('male_30_39')" id="tab-male_30_39" class="tab-btn px-3 py-1.5 text-xs font-bold rounded-lg transition bg-white text-slate-700 hover:bg-slate-200">男性 30-39 歲</button>
+                <button onclick="switchSettingsTab('male_40_49')" id="tab-male_40_49" class="tab-btn px-3 py-1.5 text-xs font-bold rounded-lg transition bg-white text-slate-700 hover:bg-slate-200">男性 40-49 歲</button>
+                <button onclick="switchSettingsTab('male_50_plus')" id="tab-male_50_plus" class="tab-btn px-3 py-1.5 text-xs font-bold rounded-lg transition bg-white text-slate-700 hover:bg-slate-200">男性 50 歲以上</button>
+                <button onclick="switchSettingsTab('female_all')" id="tab-female_all" class="tab-btn px-3 py-1.5 text-xs font-bold rounded-lg transition bg-white text-slate-700 hover:bg-slate-200">女性 (不分年齡)</button>
+            </div>
+
+            <!-- Table Container -->
+            <div class="p-6 overflow-y-auto flex-grow space-y-4">
+                <p class="text-xs text-slate-500 bg-blue-50 border border-blue-200 text-blue-800 p-3 rounded-xl flex items-center">
+                    <i class="fa-solid fa-circle-info mr-2 text-blue-600 text-sm"></i> 提示：留空（ - ）代表該分數無設定值。跑走項目請填寫「秒數」（例：8分35秒 = 515 秒）。女性屈臂包含「次數」與「秒數」獨立欄位。
+                </p>
+
+                <div class="overflow-x-auto border border-slate-200 rounded-xl">
+                    <table class="w-full text-xs text-center border-collapse">
+                        <thead class="bg-slate-800 text-slate-200 sticky top-0 z-10 font-semibold">
+                            <tr>
+                                <th class="p-2 border-b border-slate-700 w-12">得分</th>
+                                <th class="p-2 border-b border-slate-700">立定跳遠 (cm)</th>
+                                <th class="p-2 border-b border-slate-700">後拋擲遠 (m)</th>
+                                <th class="p-2 border-b border-slate-700">折返跑 (趟)</th>
+                                <th class="p-2 border-b border-slate-700">菱形槓硬舉 (kg)</th>
+                                <th id="th-arm-col1" class="p-2 border-b border-slate-700">懸吊屈臂 (次)</th>
+                                <th id="th-arm-col2" class="p-2 border-b border-slate-700 hidden">屈臂懸垂 (秒)</th>
+                                <th class="p-2 border-b border-slate-700">負重行走 (kg)</th>
+                                <th class="p-2 border-b border-slate-700">1500m跑走 (秒)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="settings-table-body" class="divide-y divide-slate-200 bg-white">
+                            <!-- Dynamically rendered via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="px-6 py-4 bg-slate-100 border-t border-slate-200 flex justify-between items-center flex-shrink-0">
+                <button onclick="resetToDefaultSettings()" class="px-4 py-2 bg-slate-200 hover:bg-rose-100 hover:text-rose-700 text-slate-700 font-bold rounded-xl text-xs transition flex items-center">
+                    <i class="fa-solid fa-rotate-left mr-1.5"></i> 恢復預設值
+                </button>
+                <div class="space-x-2">
+                    <button onclick="closeSettingsModal()" class="px-4 py-2 bg-slate-300 hover:bg-slate-400 text-slate-800 font-bold rounded-xl text-xs transition">
+                        取消
+                    </button>
+                    <button onclick="saveCustomSettings()" class="px-5 py-2 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl text-xs transition shadow-md flex-inline items-center">
+                        <i class="fa-solid fa-floppy-disk mr-1.5"></i> 儲存並套用
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scoring Tables Standard Data & Logic JavaScript -->
+    <script>
+        // Original Default Scoring Standard Data Tables
+        const DEFAULT_SCORING_TABLES = {
+            // Male 20-29
+            male_20_29: [
+                { score: 20, jump: null, throwM: null, shuttle: null, deadlift: 175, arm: null, walk: null, runSec: 5*60 + 40 },
+                { score: 19, jump: null, throwM: null, shuttle: null, deadlift: 165, arm: null, walk: null, runSec: 5*60 + 55 },
+                { score: 18, jump: null, throwM: null, shuttle: null, deadlift: 155, arm: null, walk: null, runSec: 6*60 + 10 },
+                { score: 17, jump: null, throwM: null, shuttle: null, deadlift: 145, arm: null, walk: null, runSec: 6*60 + 25 },
+                { score: 16, jump: null, throwM: null, shuttle: null, deadlift: 135, arm: null, walk: null, runSec: 6*60 + 40 },
+                { score: 15, jump: null, throwM: 18,   shuttle: null, deadlift: 125, arm: 20,   walk: null, runSec: 6*60 + 55 },
+                { score: 14, jump: null, throwM: 17,   shuttle: null, deadlift: 115, arm: 18,   walk: null, runSec: 7*60 + 10 },
+                { score: 13, jump: null, throwM: 16,   shuttle: null, deadlift: 110, arm: 16,   walk: null, runSec: 7*60 + 25 },
+                { score: 12, jump: null, throwM: 15,   shuttle: null, deadlift: 105, arm: 14,   walk: null, runSec: 7*60 + 40 },
+                { score: 11, jump: null, throwM: 14,   shuttle: null, deadlift: 100, arm: 12,   walk: null, runSec: 7*60 + 50 },
+                { score: 10, jump: 260,  throwM: 13,   shuttle: 16,   deadlift: 95,  arm: 10,   walk: 175,  runSec: 8*60 + 0 },
+                { score: 9,  jump: 250,  throwM: 12,   shuttle: 15,   deadlift: 90,  arm: 9,    walk: 160,  runSec: 8*60 + 10 },
+                { score: 8,  jump: 240,  throwM: 11,   shuttle: 14,   deadlift: 85,  arm: 8,    walk: 145,  runSec: 8*60 + 20 },
+                { score: 7,  jump: 230,  throwM: 10,   shuttle: 13,   deadlift: 80,  arm: 7,    walk: 130,  runSec: 8*60 + 30 },
+                { score: 6,  jump: 220,  throwM: 9,    shuttle: 12,   deadlift: 75,  arm: 6,    walk: 125,  runSec: 8*60 + 40 },
+                { score: 5,  jump: 210,  throwM: 8,    shuttle: 11,   deadlift: 70,  arm: 5,    walk: 120,  runSec: 8*60 + 50 },
+                { score: 4,  jump: 205,  throwM: 7,    shuttle: 10,   deadlift: 65,  arm: 4,    walk: 115,  runSec: 9*60 + 0 },
+                { score: 3,  jump: 200,  throwM: 6,    shuttle: 9,    deadlift: 60,  arm: 3,    walk: 110,  runSec: 9*60 + 10 },
+                { score: 2,  jump: 195,  throwM: 5,    shuttle: 8,    deadlift: 55,  arm: 2,    walk: 105,  runSec: 9*60 + 20 },
+                { score: 1,  jump: 190,  throwM: 4,    shuttle: 7,    deadlift: 50,  arm: 1,    walk: 100,  runSec: 9*60 + 30 }
+            ],
+            // Male 30-39
+            male_30_39: [
+                { score: 20, jump: null, throwM: null, shuttle: null, deadlift: 170, arm: null, walk: null, runSec: 5*60 + 50 },
+                { score: 19, jump: null, throwM: null, shuttle: null, deadlift: 160, arm: null, walk: null, runSec: 6*60 + 5 },
+                { score: 18, jump: null, throwM: null, shuttle: null, deadlift: 150, arm: null, walk: null, runSec: 6*60 + 20 },
+                { score: 17, jump: null, throwM: null, shuttle: null, deadlift: 140, arm: null, walk: null, runSec: 6*60 + 35 },
+                { score: 16, jump: null, throwM: null, shuttle: null, deadlift: 130, arm: null, walk: null, runSec: 6*60 + 50 },
+                { score: 15, jump: null, throwM: 17,   shuttle: null, deadlift: 120, arm: 18,   walk: null, runSec: 7*60 + 5 },
+                { score: 14, jump: null, throwM: 16,   shuttle: null, deadlift: 110, arm: 16,   walk: null, runSec: 7*60 + 20 },
+                { score: 13, jump: null, throwM: 15,   shuttle: null, deadlift: 105, arm: 14,   walk: null, runSec: 7*60 + 35 },
+                { score: 12, jump: null, throwM: 14,   shuttle: null, deadlift: 100, arm: 12,   walk: null, runSec: 7*60 + 50 },
+                { score: 11, jump: null, throwM: 13,   shuttle: null, deadlift: 95,  arm: 10,   walk: null, runSec: 8*60 + 0 },
+                { score: 10, jump: 255,  throwM: 12,   shuttle: 15,   deadlift: 90,  arm: 9,    walk: 170,  runSec: 8*60 + 10 },
+                { score: 9,  jump: 245,  throwM: 11,   shuttle: 14,   deadlift: 85,  arm: 8,    walk: 155,  runSec: 8*60 + 20 },
+                { score: 8,  jump: 235,  throwM: 10,   shuttle: 13,   deadlift: 80,  arm: 7,    walk: 140,  runSec: 8*60 + 30 },
+                { score: 7,  jump: 225,  throwM: 9,    shuttle: 12,   deadlift: 75,  arm: 6,    walk: 125,  runSec: 8*60 + 40 },
+                { score: 6,  jump: 215,  throwM: 8,    shuttle: 11,   deadlift: 70,  arm: 5,    walk: 120,  runSec: 8*60 + 50 },
+                { score: 5,  jump: 205,  throwM: 7,    shuttle: 10,   deadlift: 65,  arm: 4,    walk: 115,  runSec: 9*60 + 0 },
+                { score: 4,  jump: 200,  throwM: 6,    shuttle: 9,    deadlift: 60,  arm: 3,    walk: 110,  runSec: 9*60 + 10 },
+                { score: 3,  jump: 195,  throwM: 5,    shuttle: 8,    deadlift: 55,  arm: 2,    walk: 105,  runSec: 9*60 + 20 },
+                { score: 2,  jump: 190,  throwM: 4,    shuttle: 7,    deadlift: 50,  arm: null, walk: 100,  runSec: 9*60 + 30 },
+                { score: 1,  jump: 185,  throwM: 3,    shuttle: 6,    deadlift: 45,  arm: 1,    walk: 95,   runSec: 9*60 + 40 }
+            ],
+            // Male 40-49
+            male_40_49: [
+                { score: 20, jump: null, throwM: null, shuttle: null, deadlift: 165, arm: null, walk: null, runSec: 6*60 + 15 },
+                { score: 19, jump: null, throwM: null, shuttle: null, deadlift: 155, arm: null, walk: null, runSec: 6*60 + 30 },
+                { score: 18, jump: null, throwM: null, shuttle: null, deadlift: 145, arm: null, walk: null, runSec: 6*60 + 45 },
+                { score: 17, jump: null, throwM: null, shuttle: null, deadlift: 135, arm: null, walk: null, runSec: 7*60 + 0 },
+                { score: 16, jump: null, throwM: null, shuttle: null, deadlift: 125, arm: null, walk: null, runSec: 7*60 + 15 },
+                { score: 15, jump: null, throwM: 16,   shuttle: null, deadlift: 115, arm: 18,   walk: null, runSec: 7*60 + 30 },
+                { score: 14, jump: null, throwM: 15,   shuttle: null, deadlift: 105, arm: 16,   walk: null, runSec: 7*60 + 45 },
+                { score: 13, jump: null, throwM: 14,   shuttle: null, deadlift: 100, arm: 14,   walk: null, runSec: 8*60 + 0 },
+                { score: 12, jump: null, throwM: 13,   shuttle: null, deadlift: 95,  arm: 12,   walk: null, runSec: 8*60 + 15 },
+                { score: 11, jump: null, throwM: 12,   shuttle: null, deadlift: 90,  arm: 10,   walk: null, runSec: 8*60 + 25 },
+                { score: 10, jump: 250,  throwM: 11,   shuttle: 15,   deadlift: 85,  arm: 9,    walk: 165,  runSec: 8*60 + 35 },
+                { score: 9,  jump: 240,  throwM: 10,   shuttle: 14,   deadlift: 80,  arm: 8,    walk: 150,  runSec: 8*60 + 45 },
+                { score: 8,  jump: 230,  throwM: 9,    shuttle: 13,   deadlift: 75,  arm: 7,    walk: 135,  runSec: 8*60 + 55 },
+                { score: 7,  jump: 220,  throwM: 8,    shuttle: 12,   deadlift: 70,  arm: 6,    walk: 120,  runSec: 9*60 + 5 },
+                { score: 6,  jump: 210,  throwM: 7,    shuttle: 11,   deadlift: 65,  arm: 5,    walk: 115,  runSec: 9*60 + 15 },
+                { score: 5,  jump: 200,  throwM: 6,    shuttle: 10,   deadlift: 60,  arm: 4,    walk: 110,  runSec: 9*60 + 25 },
+                { score: 4,  jump: 195,  throwM: 5,    shuttle: 9,    deadlift: 55,  arm: 3,    walk: 105,  runSec: 9*60 + 35 },
+                { score: 3,  jump: 190,  throwM: 4,    shuttle: 8,    deadlift: 50,  arm: 2,    walk: 100,  runSec: 9*60 + 45 },
+                { score: 2,  jump: 185,  throwM: 3,    shuttle: 7,    deadlift: 45,  arm: null, walk: 95,   runSec: 9*60 + 55 },
+                { score: 1,  jump: 180,  throwM: 2,    shuttle: 6,    deadlift: 40,  arm: 1,    walk: 90,   runSec: 10*60 + 5 }
+            ],
+            // Male 50+
+            male_50_plus: [
+                { score: 20, jump: null, throwM: null, shuttle: null, deadlift: 140, arm: null, walk: null, runSec: 8*60 + 35 },
+                { score: 19, jump: null, throwM: null, shuttle: null, deadlift: 130, arm: null, walk: null, runSec: 8*60 + 50 },
+                { score: 18, jump: null, throwM: null, shuttle: null, deadlift: 120, arm: null, walk: null, runSec: 9*60 + 5 },
+                { score: 17, jump: null, throwM: null, shuttle: null, deadlift: 110, arm: null, walk: null, runSec: 9*60 + 20 },
+                { score: 16, jump: null, throwM: null, shuttle: null, deadlift: 100, arm: null, walk: null, runSec: 9*60 + 35 },
+                { score: 15, jump: null, throwM: 13,   shuttle: null, deadlift: 95,  arm: 9,    walk: null, runSec: 9*60 + 50 },
+                { score: 14, jump: null, throwM: 12.5, shuttle: null, deadlift: 90,  arm: 8,    walk: null, runSec: 10*60 + 5 },
+                { score: 13, jump: null, throwM: 12,   shuttle: null, deadlift: 85,  arm: 7,    walk: null, runSec: 10*60 + 20 },
+                { score: 12, jump: null, throwM: 11.5, shuttle: null, deadlift: 80,  arm: 6,    walk: null, runSec: 10*60 + 35 },
+                { score: 11, jump: null, throwM: 11,   shuttle: null, deadlift: 75,  arm: 5,    walk: null, runSec: 10*60 + 40 },
+                { score: 10, jump: 185,  throwM: 10.5, shuttle: 14,   deadlift: 70,  arm: 4,    walk: 140,  runSec: 10*60 + 45 },
+                { score: 9,  jump: 180,  throwM: 10,   shuttle: 13,   deadlift: 65,  arm: 3,    walk: 120,  runSec: 10*60 + 50 },
+                { score: 8,  jump: 175,  throwM: 9,    shuttle: 12,   deadlift: 60,  arm: null, walk: 100,  runSec: 10*60 + 55 },
+                { score: 7,  jump: 170,  throwM: 8,    shuttle: 11,   deadlift: 55,  arm: null, walk: 90,   runSec: 11*60 + 0 },
+                { score: 6,  jump: 165,  throwM: 7,    shuttle: 10,   deadlift: 50,  arm: 2,    walk: 80,   runSec: 11*60 + 5 },
+                { score: 5,  jump: 160,  throwM: 6,    shuttle: 9,    deadlift: 45,  arm: null, walk: 75,   runSec: 11*60 + 10 },
+                { score: 4,  jump: 155,  throwM: 5,    shuttle: 8,    deadlift: 40,  arm: null, walk: 70,   runSec: 11*60 + 15 },
+                { score: 3,  jump: 150,  throwM: 4,    shuttle: 7,    deadlift: 35,  arm: 1,    walk: 65,   runSec: 11*60 + 20 },
+                { score: 2,  jump: 145,  throwM: 3,    shuttle: 6,    deadlift: 30,  arm: null, walk: 60,   runSec: 11*60 + 25 },
+                { score: 1,  jump: 140,  throwM: 2,    shuttle: 5,    deadlift: 25,  arm: null, walk: 55,   runSec: 11*60 + 30 }
+            ],
+            // Female (All Ages)
+            female_all: [
+                { score: 20, jump: null, throwM: null, shuttle: null, deadlift: 140, armCount: null, armTime: null, walk: null, runSec: 7*60 + 30 },
+                { score: 19, jump: null, throwM: null, shuttle: null, deadlift: 120, armCount: null, armTime: null, walk: null, runSec: 7*60 + 45 },
+                { score: 18, jump: null, throwM: null, shuttle: null, deadlift: 110, armCount: null, armTime: null, walk: null, runSec: 8*60 + 0 },
+                { score: 17, jump: null, throwM: null, shuttle: null, deadlift: 100, armCount: null, armTime: null, walk: null, runSec: 8*60 + 15 },
+                { score: 16, jump: null, throwM: null, shuttle: null, deadlift: 90,  armCount: null, armTime: null, walk: null, runSec: 8*60 + 30 },
+                { score: 15, jump: null, throwM: 13,   shuttle: null, deadlift: 85,  armCount: 6,    armTime: null, walk: null, runSec: 8*60 + 45 },
+                { score: 14, jump: null, throwM: 12,   shuttle: null, deadlift: 80,  armCount: 5,    armTime: null, walk: null, runSec: 9*60 + 0 },
+                { score: 13, jump: null, throwM: 11,   shuttle: null, deadlift: 75,  armCount: 4,    armTime: null, walk: null, runSec: 9*60 + 15 },
+                { score: 12, jump: null, throwM: 10,   shuttle: null, deadlift: 70,  armCount: 3,    armTime: null, walk: null, runSec: 9*60 + 30 },
+                { score: 11, jump: null, throwM: 9,    shuttle: null, deadlift: 65,  armCount: 2,    armTime: null, walk: null, runSec: 9*60 + 45 },
+                { score: 10, jump: 200,  throwM: 8.5,  shuttle: 15,   deadlift: 60,  armCount: null, armTime: null, walk: 140,  runSec: 9*60 + 50 },
+                { score: 9,  jump: 190,  throwM: 8,    shuttle: 14,   deadlift: 55,  armCount: 1,    armTime: null, walk: 120,  runSec: 9*60 + 55 },
+                { score: 8,  jump: 180,  throwM: 7.5,  shuttle: 13,   deadlift: 50,  armCount: null, armTime: 35,   walk: 100,  runSec: 10*60 + 0 },
+                { score: 7,  jump: 170,  throwM: 7,    shuttle: 12,   deadlift: 45,  armCount: null, armTime: 32,   walk: 90,   runSec: 10*60 + 5 },
+                { score: 6,  jump: 160,  throwM: 6.5,  shuttle: 11,   deadlift: 40,  armCount: null, armTime: 30,   walk: 80,   runSec: 10*60 + 10 },
+                { score: 5,  jump: 155,  throwM: 6,    shuttle: 10,   deadlift: 35,  armCount: null, armTime: 28,   walk: 70,   runSec: 10*60 + 15 },
+                { score: 4,  jump: 150,  throwM: 5.5,  shuttle: 9,    deadlift: 30,  armCount: null, armTime: 26,   walk: 65,   runSec: 10*60 + 20 },
+                { score: 3,  jump: 145,  throwM: 5,    shuttle: 8,    deadlift: 25,  armCount: null, armTime: 24,   walk: 60,   runSec: 10*60 + 25 },
+                { score: 2,  jump: 140,  throwM: 4.5,  shuttle: 7,    deadlift: null,armCount: null, armTime: 22,   walk: 55,   runSec: 10*60 + 30 },
+                { score: 1,  jump: 135,  throwM: 3,    shuttle: 6,    deadlift: 20,  armCount: null, armTime: 20,   walk: 50,   runSec: 10*60 + 35 }
+            ]
+        };
+
+        // Active Working Data Copy (Loaded from LocalStorage if available)
+        let SCORING_TABLES = loadCustomSettings();
+        let currentSettingsTab = 'male_20_29';
+
+        // Load settings from LocalStorage or default
+        function loadCustomSettings() {
+            try {
+                const saved = localStorage.getItem('firefighter_scoring_tables_v1');
+                if (saved) {
+                    return JSON.parse(saved);
+                }
+            } catch (e) {
+                console.error("Failed to load settings from LocalStorage", e);
+            }
+            return JSON.parse(JSON.stringify(DEFAULT_SCORING_TABLES));
+        }
+
+        // Initialize UI & Event Listeners
+        window.onload = function() {
+            handleBasicInfoChange();
+        };
+
+        // Modal Controls
+        function openSettingsModal() {
+            document.getElementById('settings-modal').classList.remove('hidden');
+            switchSettingsTab(currentSettingsTab);
+        }
+
+        function closeSettingsModal() {
+            document.getElementById('settings-modal').classList.add('hidden');
+        }
+
+        function switchSettingsTab(tabKey) {
+            currentSettingsTab = tabKey;
+            
+            // Highlight Tab Buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.className = "tab-btn px-3 py-1.5 text-xs font-bold rounded-lg transition bg-white text-slate-700 hover:bg-slate-200";
+            });
+            document.getElementById(`tab-${tabKey}`).className = "tab-btn px-3 py-1.5 text-xs font-bold rounded-lg transition bg-red-600 text-white shadow-sm";
+
+            // Toggle table headers based on gender
+            const thArmCol1 = document.getElementById('th-arm-col1');
+            const thArmCol2 = document.getElementById('th-arm-col2');
+
+            if (tabKey === 'female_all') {
+                thArmCol1.textContent = "懸吊屈臂 (次)";
+                thArmCol2.classList.remove('hidden');
+            } else {
+                thArmCol1.textContent = "懸吊屈臂 (次)";
+                thArmCol2.classList.add('hidden');
+            }
+
+            renderSettingsTable(tabKey);
+        }
+
+        function renderSettingsTable(tabKey) {
+            const tbody = document.getElementById('settings-table-body');
+            const data = SCORING_TABLES[tabKey];
+            const isFemale = (tabKey === 'female_all');
+
+            let html = '';
+            data.forEach((row, index) => {
+                html += `
+                    <tr class="hover:bg-slate-50 transition">
+                        <td class="p-2 font-bold bg-slate-100 border-r border-slate-200">${row.score}</td>
+                        <td class="p-1"><input type="number" step="any" class="w-full text-center py-1 bg-slate-50 border border-slate-200 rounded focus:bg-white focus:border-red-500 font-semibold text-slate-800" data-row="${index}" data-key="jump" value="${row.jump ?? ''}"></td>
+                        <td class="p-1"><input type="number" step="any" class="w-full text-center py-1 bg-slate-50 border border-slate-200 rounded focus:bg-white focus:border-red-500 font-semibold text-slate-800" data-row="${index}" data-key="throwM" value="${row.throwM ?? ''}"></td>
+                        <td class="p-1"><input type="number" step="any" class="w-full text-center py-1 bg-slate-50 border border-slate-200 rounded focus:bg-white focus:border-red-500 font-semibold text-slate-800" data-row="${index}" data-key="shuttle" value="${row.shuttle ?? ''}"></td>
+                        <td class="p-1"><input type="number" step="any" class="w-full text-center py-1 bg-slate-50 border border-slate-200 rounded focus:bg-white focus:border-red-500 font-semibold text-slate-800" data-row="${index}" data-key="deadlift" value="${row.deadlift ?? ''}"></td>
+                        
+                        ${isFemale ? `
+                            <td class="p-1"><input type="number" step="any" class="w-full text-center py-1 bg-slate-50 border border-slate-200 rounded focus:bg-white focus:border-red-500 font-semibold text-slate-800" data-row="${index}" data-key="armCount" value="${row.armCount ?? ''}"></td>
+                            <td class="p-1"><input type="number" step="any" class="w-full text-center py-1 bg-slate-50 border border-slate-200 rounded focus:bg-white focus:border-red-500 font-semibold text-slate-800" data-row="${index}" data-key="armTime" value="${row.armTime ?? ''}"></td>
+                        ` : `
+                            <td class="p-1"><input type="number" step="any" class="w-full text-center py-1 bg-slate-50 border border-slate-200 rounded focus:bg-white focus:border-red-500 font-semibold text-slate-800" data-row="${index}" data-key="arm" value="${row.arm ?? ''}"></td>
+                        `}
+
+                        <td class="p-1"><input type="number" step="any" class="w-full text-center py-1 bg-slate-50 border border-slate-200 rounded focus:bg-white focus:border-red-500 font-semibold text-slate-800" data-row="${index}" data-key="walk" value="${row.walk ?? ''}"></td>
+                        <td class="p-1"><input type="number" step="any" class="w-full text-center py-1 bg-slate-50 border border-slate-200 rounded focus:bg-white focus:border-red-500 font-semibold text-slate-800" data-row="${index}" data-key="runSec" value="${row.runSec ?? ''}"></td>
+                    </tr>
+                `;
+            });
+            tbody.innerHTML = html;
+        }
+
+        // Save Custom Settings to LocalStorage & recalculate
+        function saveCustomSettings() {
+            const inputs = document.querySelectorAll('#settings-table-body input');
+            const data = SCORING_TABLES[currentSettingsTab];
+
+            inputs.forEach(input => {
+                const rowIndex = parseInt(input.dataset.row);
+                const key = input.dataset.key;
+                const val = input.value.trim();
+
+                data[rowIndex][key] = val === '' ? null : parseFloat(val);
+            });
+
+            try {
+                localStorage.setItem('firefighter_scoring_tables_v1', JSON.stringify(SCORING_TABLES));
+            } catch (e) {
+                console.error("Failed to save to LocalStorage", e);
+            }
+
+            closeSettingsModal();
+            calculateScores();
+        }
+
+        // Reset Settings to Default Data
+        function resetToDefaultSettings() {
+            SCORING_TABLES = JSON.parse(JSON.stringify(DEFAULT_SCORING_TABLES));
+            try {
+                localStorage.removeItem('firefighter_scoring_tables_v1');
+            } catch (e) {
+                console.error("Failed to clear LocalStorage", e);
+            }
+            switchSettingsTab(currentSettingsTab);
+            calculateScores();
+        }
+
+        // Handle Gender / Age UI adjustments
+        function handleBasicInfoChange() {
+            const gender = document.querySelector('input[name="gender"]:checked').value;
+            const ageInput = document.getElementById('age-input');
+            const ageHint = document.getElementById('age-hint');
+            const maleArmContainer = document.getElementById('male-arm-container');
+            const femaleArmContainer = document.getElementById('female-arm-container');
+            const flexedArmTitle = document.getElementById('flexed-arm-title');
+            const genderMaleLabel = document.getElementById('gender-male-label');
+            const genderFemaleLabel = document.getElementById('gender-female-label');
+
+            if (gender === 'male') {
+                genderMaleLabel.className = "flex items-center justify-center p-3 border-2 border-red-500 bg-red-50/50 rounded-xl cursor-pointer transition-all";
+                genderFemaleLabel.className = "flex items-center justify-center p-3 border-2 border-slate-200 bg-white rounded-xl cursor-pointer transition-all hover:border-slate-300";
+                
+                ageInput.disabled = false;
+                ageInput.classList.remove('opacity-50', 'bg-slate-200');
+                ageHint.textContent = "(對應男性分組)";
+
+                maleArmContainer.classList.remove('hidden');
+                femaleArmContainer.classList.add('hidden');
+                flexedArmTitle.textContent = "懸吊屈臂";
+            } else {
+                genderFemaleLabel.className = "flex items-center justify-center p-3 border-2 border-pink-500 bg-pink-50/50 rounded-xl cursor-pointer transition-all";
+                genderMaleLabel.className = "flex items-center justify-center p-3 border-2 border-slate-200 bg-white rounded-xl cursor-pointer transition-all hover:border-slate-300";
+
+                ageInput.disabled = true;
+                ageInput.classList.add('opacity-50', 'bg-slate-200');
+                ageHint.textContent = "(女性不分年齡)";
+
+                maleArmContainer.classList.add('hidden');
+                femaleArmContainer.classList.remove('hidden');
+                flexedArmTitle.textContent = "懸吊屈臂 / 屈臂懸垂";
+            }
+
+            calculateScores();
+        }
+
+        // Get currently active dataset based on gender and age
+        function getActiveDataset() {
+            const gender = document.querySelector('input[name="gender"]:checked').value;
+            const age = parseInt(document.getElementById('age-input').value) || 20;
+            const standardNameEl = document.getElementById('current-standard-name');
+
+            if (gender === 'female') {
+                standardNameEl.textContent = "女性 (不分年齡)";
+                return { data: SCORING_TABLES.female_all, type: 'female' };
+            }
+
+            // Male datasets by age
+            if (age < 30) {
+                standardNameEl.textContent = "男性 20-29 歲";
+                return { data: SCORING_TABLES.male_20_29, type: 'male' };
+            } else if (age < 40) {
+                standardNameEl.textContent = "男性 30-39 歲";
+                return { data: SCORING_TABLES.male_30_39, type: 'male' };
+            } else if (age < 50) {
+                standardNameEl.textContent = "男性 40-49 歲";
+                return { data: SCORING_TABLES.male_40_49, type: 'male' };
+            } else {
+                standardNameEl.textContent = "男性 50 歲以上";
+                return { data: SCORING_TABLES.male_50_plus, type: 'male' };
+            }
+        }
+
+        // Calculation Helpers for Greater-Than-or-Equal (最高合格得分)
+        function getScoreGte(val, key, dataset) {
+            if (val === null || val === undefined || isNaN(val) || val <= 0) return 0;
+            for (let row of dataset) {
+                if (row[key] !== null && val >= row[key]) {
+                    return row.score;
+                }
+            }
+            return 0;
+        }
+
+        // Calculation Helper for Less-Than-or-Equal (1500m 跑走)
+        function getScoreLte(valSec, key, dataset) {
+            if (valSec === null || valSec === undefined || isNaN(valSec) || valSec <= 0) return 0;
+            for (let row of dataset) {
+                if (row[key] !== null && valSec <= row[key]) {
+                    return row.score;
+                }
+            }
+            return 0;
+        }
+
+        // Main Calculation Controller
+        function calculateScores() {
+            const { data: dataset, type: genderType } = getActiveDataset();
+
+            // 1. 立定跳遠
+            const jumpVal = parseFloat(document.getElementById('standing-jump').value);
+            const scoreJump = getScoreGte(jumpVal, 'jump', dataset);
+
+            // 2. 後拋擲遠
+            const throwVal = parseFloat(document.getElementById('back-throw').value);
+            const scoreThrow = getScoreGte(throwVal, 'throwM', dataset);
+
+            // 3. 折返跑
+            const shuttleVal = parseFloat(document.getElementById('shuttle-run').value);
+            const scoreShuttle = getScoreGte(shuttleVal, 'shuttle', dataset);
+
+            // 4. 硬舉
+            const deadliftVal = parseFloat(document.getElementById('trapbar-deadlift').value);
+            const scoreDeadlift = getScoreGte(deadliftVal, 'deadlift', dataset);
+
+            // 5. 懸吊屈臂 / 屈臂懸垂
+            let scoreArm = 0;
+            if (genderType === 'male') {
+                const armValMale = parseFloat(document.getElementById('pull-ups-male').value);
+                scoreArm = getScoreGte(armValMale, 'arm', dataset);
+            } else {
+                // 女性有兩個獨立欄位
+                const armCountFemale = parseFloat(document.getElementById('pull-ups-female-count').value);
+                const armTimeFemale = parseFloat(document.getElementById('pull-ups-female-time').value);
+
+                const scoreCount = getScoreGte(armCountFemale, 'armCount', dataset);
+                const scoreTime = getScoreGte(armTimeFemale, 'armTime', dataset);
+                
+                // 採兩者中較高之分數
+                scoreArm = Math.max(scoreCount, scoreTime);
+            }
+
+            // 6. 負重行走
+            const walkVal = parseFloat(document.getElementById('farmer-walk').value);
+            const scoreWalk = getScoreGte(walkVal, 'walk', dataset);
+
+            // 7. 1500公尺跑走
+            const runMin = parseFloat(document.getElementById('run-minutes').value) || 0;
+            const runSec = parseFloat(document.getElementById('run-seconds').value) || 0;
+            let scoreRun = 0;
+            if (runMin > 0 || runSec > 0) {
+                const totalRunSec = (runMin * 60) + runSec;
+                scoreRun = getScoreLte(totalRunSec, 'runSec', dataset);
+            }
+
+            // Calculate Total Score
+            const totalScore = scoreJump + scoreThrow + scoreShuttle + scoreDeadlift + scoreArm + scoreWalk + scoreRun;
+
+            // Update UI elements
+            updateItemScore('jump', scoreJump);
+            updateItemScore('throw', scoreThrow);
+            updateItemScore('shuttle', scoreShuttle);
+            updateItemScore('deadlift', scoreDeadlift);
+            updateItemScore('arm', scoreArm);
+            updateItemScore('walk', scoreWalk);
+            updateItemScore('run', scoreRun);
+
+            // Update Total Score Display
+            const totalScoreEl = document.getElementById('total-score');
+            const totalBarEl = document.getElementById('total-score-bar');
+            const badgeEl = document.getElementById('evaluation-badge');
+
+            totalScoreEl.textContent = totalScore;
+            
+            // Total score percentage (Max 140 points)
+            const percentage = Math.min(100, Math.round((totalScore / 140) * 100));
+            totalBarEl.style.width = `${percentage}%`;
+
+            // Dynamic Evaluation Badge
+            if (totalScore >= 112) { // 80%+
+                badgeEl.className = "inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-300";
+                badgeEl.innerHTML = '<i class="fa-solid fa-trophy mr-1.5 text-emerald-600"></i> 成績特優 (80%分以上)';
+            } else if (totalScore >= 84) { // 60%+
+                badgeEl.className = "inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-800 border border-blue-300";
+                badgeEl.innerHTML = '<i class="fa-solid fa-circle-check mr-1.5 text-blue-600"></i> 成績合格 (60%分以上)';
+            } else if (totalScore > 0) {
+                badgeEl.className = "inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-300";
+                badgeEl.innerHTML = '<i class="fa-solid fa-triangle-exclamation mr-1.5 text-amber-600"></i> 成績待加強';
+            } else {
+                badgeEl.className = "inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-600";
+                badgeEl.textContent = "請輸入測驗數據";
+            }
+        }
+
+        // Update single item score badge & breakdown list
+        function updateItemScore(id, score) {
+            const badge = document.getElementById(`score-${id}`);
+            const detail = document.getElementById(`detail-${id}`);
+
+            badge.textContent = `${score} 分`;
+            detail.textContent = `${score} 分`;
+
+            if (score > 0) {
+                badge.className = "text-xs font-bold px-2 py-0.5 rounded-full bg-red-100 text-red-700 border border-red-200";
+                detail.className = "font-bold text-red-600";
+            } else {
+                badge.className = "text-xs font-bold px-2 py-0.5 rounded-full bg-slate-200 text-slate-700";
+                detail.className = "font-bold text-slate-400";
+            }
+        }
+
+        // Clear all inputs
+        function clearAllInputs() {
+            document.getElementById('standing-jump').value = '';
+            document.getElementById('back-throw').value = '';
+            document.getElementById('shuttle-run').value = '';
+            document.getElementById('trapbar-deadlift').value = '';
+            document.getElementById('pull-ups-male').value = '';
+            document.getElementById('pull-ups-female-count').value = '';
+            document.getElementById('pull-ups-female-time').value = '';
+            document.getElementById('farmer-walk').value = '';
+            document.getElementById('run-minutes').value = '';
+            document.getElementById('run-seconds').value = '';
+
+            calculateScores();
+        }
+    </script>
+</body>
+</html>
